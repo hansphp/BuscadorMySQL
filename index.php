@@ -48,6 +48,7 @@ var db = {
 				}
 			});
 		});
+		db.reset.columns();
 		console.log('Base de datos inicializada');
 	},
 	create:{
@@ -55,9 +56,12 @@ var db = {
 			db.instance.transaction(function (tx) {
 				tx.executeSql("CREATE TABLE IF NOT EXISTS " +
                   "tables(id INTEGER PRIMARY KEY ASC, tabla TEXT, motor TEXT, cotejamiento TEXT, filas INTEGER, estado VARCHAR)", []);
-			 	tx.executeSql("CREATE TABLE IF NOT EXISTS " +
+			});
+		},
+		columns: function(){
+			db.instance.transaction(function (tx) {
+				tx.executeSql("CREATE TABLE IF NOT EXISTS " +
                   "columns(tabla TEXT, columna TEXT, tipo TEXT, type TEXT, size INTEGER, estado VARCHAR)", []);
-			  
 			});
 		}
 	},
@@ -67,6 +71,12 @@ var db = {
 				tx.executeSql("DROP TABLE tables");
 			});
 			db.create.tables();
+		},
+		columns: function(){
+			db.instance.transaction(function (tx) {
+				tx.executeSql("DROP TABLE columns");
+			});
+			db.create.columns();
 		}
 	},
 	load: {
@@ -139,8 +149,7 @@ var load = {
 			$.each( data, function( key, val ) {
 				console.log(val);
 				db.load.columns(val.TABLE_NAME, val.COLUMN_NAME, val.COLUMN_TYPE, val.DATA_TYPE, val.MAX_LEN); // WebSQL
-				$('#columns-' + th).append('<tr><td>'+val.COLUMN_NAME+'</td><td>'+val.COLUMN_TYPE+'</td><td>'+val.MAX_LEN+'</td><td><img src="process.png"></td></tr><tr>');
-			//db.load.tables(key, val.TABLE_NAME, val.ENGINE, val.TABLE_COLLATION, val.TABLE_ROWS); // WebSQL
+			///	$('#columns-' + th).append('<tr><td>'+val.COLUMN_NAME+'</td><td>'+val.COLUMN_TYPE+'</td><td>'+val.MAX_LEN+'</td><td><img src="process.png"></td></tr><tr>');
 		  });
 		}
 	},
