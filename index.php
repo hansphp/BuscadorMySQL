@@ -97,7 +97,6 @@ var db = {
 var load = {
 	Threads: 4,
 	'tables' : function(database){
-		
 		db.reset.tables(); // WebSQL
 		$( "#tables" ).html('<td colspan="5" class="wait"><img src="loading.gif" height="32px"></td>');
 		$.getJSON( 'load.php?database=' + database, function( data ) {
@@ -189,9 +188,17 @@ $databases = $SQL->consulta("SELECT DISTINCT TABLE_SCHEMA FROM information_schem
             </div>
         </div>
         <div class="col-md-6">
-             <div class="form-group">
-            <label for="buscar">Buscar fragmento:</label>
-            <input type="buscar" class="form-control" id="buscar">
+        	<div class="col-md-9">
+                 <div class="form-group">
+                <label for="buscar">Buscar fragmento:</label>
+                <input type="buscar" class="form-control" id="buscar">
+                </div>
+            </div>
+            <div class="col-md-3">
+                 <div class="form-group">
+                <label for="boton">&nbsp;</label>
+                <button type="button" id="boton" class="form-control btn btn-default">Buscar</button>
+                </div>
             </div>
         <div>
         </div>
