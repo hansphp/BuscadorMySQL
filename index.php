@@ -90,16 +90,45 @@ var db = {
 				   $('#reset').prop('disabled', false);
 				});
 			});
+		},
+		columns : function (id){
+			db.instance.transaction(function (tx) {
+				tx.executeSql('SELECT * FROM tables WHERE id = ?', [id], function (tx, results) {
+					var database = $('#database').val();
+					var jqxhr = $.post( "load.php?type=column&database="+database+"&table="+results.rows.item(0).tabla, function(data) {
+					  console.info( "success");
+					  console.log(data);
+					  load.threads.add();
+					})
+					  .done(function() {
+						console.info( "second success" );
+					  })
+					  .fail(function() {
+						console.info( "error" );
+					  })
+					  .always(function() {
+						console.info( "finished" );
+					});
+					
+				});
+			});	
 		}
 	}
 }
 
 var load = {
-	Threads: 4,
+	threads:{
+		max:4,
+		counter:0,
+		add: function(){
+			console.info("Agregando thread.");
+			$('#tabs-title').append('<li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Profile</a></li>');
+		}
+	},
 	'tables' : function(database){
 		db.reset.tables(); // WebSQL
 		$( "#tables" ).html('<td colspan="5" class="wait"><img src="loading.gif" height="32px"></td>');
-		$.getJSON( 'load.php?database=' + database, function( data ) {
+		$.getJSON( 'load.php?type=table&database=' + database, function( data ) {
 		  $.each( data, function( key, val ) {
 			db.load.tables(key, val.TABLE_NAME, val.ENGINE, val.TABLE_COLLATION, val.TABLE_ROWS); // WebSQL
 		  });
@@ -126,6 +155,7 @@ var load = {
 
 $(function() {
 	db.initialize();
+	
 	$('#database').change(function() {
 		localStorage.setItem("database", this.value);
 		$('#database').prop('disabled', true);
@@ -151,6 +181,15 @@ $(function() {
 		localStorage.setItem("noempty", false);
 		$('#tables').html('<tr><td colspan="5" class="wait">Lista de tablas en la base de datos</td></tr>');
 		
+	});
+	$('#boton').click(function(){
+		console.warn("Buscando:"+$('#buscar').val());
+		var id = -1;
+		$('#tables tr').each(function(i, e) {
+			// Termina para solo servir al primer elemento.
+			id = $(e).attr('data-id');
+        });
+		db.populate.columns(id);
 	});
 });
 </script>
@@ -225,7 +264,7 @@ $databases = $SQL->consulta("SELECT DISTINCT TABLE_SCHEMA FROM information_schem
         </div>
         <div class="col-md-6">
           <!-- Nav tabs -->
-          <ul class="nav nav-tabs" role="tablist">
+          <ul class="nav nav-tabs" role="tablist" id="tabs-title">
             <li role="presentation" class="active">
             	<a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a>
             </li>
