@@ -26,6 +26,9 @@ td.wait{
 	color:#990;
 	text-align:center;
 }
+.tab-content{
+	margin-top:10px;
+}
 </style>
 <script>
 var db = {
@@ -52,6 +55,8 @@ var db = {
 			db.instance.transaction(function (tx) {
 				tx.executeSql("CREATE TABLE IF NOT EXISTS " +
                   "tables(id INTEGER PRIMARY KEY ASC, tabla TEXT, motor TEXT, cotejamiento TEXT, filas INTEGER, estado VARCHAR)", []);
+			 	tx.executeSql("CREATE TABLE IF NOT EXISTS " +
+                  "columns(tabla TEXT, columna TEXT, tipo TEXT, type TEXT, size INTEGER, estado VARCHAR)", []);
 			  
 			});
 		}
@@ -68,6 +73,11 @@ var db = {
 		tables: function(idx, table, engine, cotejamiento, filas){
 			db.instance.transaction(function (tx) {
 			  tx.executeSql('INSERT INTO tables VALUES (?, ?, ?, ?, ?, ?)', [idx, table, engine, cotejamiento, filas, 'process']);
+			});
+		},
+		columns: function(tabla, columna, tipo, type, size){
+			db.instance.transaction(function (tx) {
+			  tx.executeSql('INSERT INTO columns VALUES (?, ?, ?, ?, ?, ?)', [tabla, columna, tipo, type, size, 'process']);
 			});
 		}
 	},
@@ -97,8 +107,7 @@ var db = {
 					var database = $('#database').val();
 					var jqxhr = $.post( "load.php?type=column&database="+database+"&table="+results.rows.item(0).tabla, function(data) {
 					  console.info( "success");
-					  console.log(data);
-					  load.threads.add();
+					  load.threads.add(data);
 					})
 					  .done(function() {
 						console.info( "second success" );
@@ -120,9 +129,19 @@ var load = {
 	threads:{
 		max:4,
 		counter:0,
-		add: function(){
+		add: function(data){
 			console.info("Agregando thread.");
-			$('#tabs-title').append('<li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Profile</a></li>');
+			var th = load.threads.counter++;
+			$('#tabs-title').append('<li role="presentation"><a href="#thread-' + th + '" aria-controls="thread-' + th + '" role="tab" data-toggle="tab">Thread{' + th + '}</a></li>');
+			$('#tabs-content').append('<div role="tabpanel" class="tab-pane" id="thread-' + th + '"><table class="table"><thead><tr><th>Campo</th><th>Tipo de dato</th><th>Tamaño máximo</th><th>Username</th></tr></thead><tbody id="columns-' + th + '"></tbody></table></div>');
+			console.log(data);
+			
+			$.each( data, function( key, val ) {
+				console.log(val);
+				db.load.columns(val.TABLE_NAME, val.COLUMN_NAME, val.COLUMN_TYPE, val.DATA_TYPE, val.MAX_LEN); // WebSQL
+				$('#columns-' + th).append('<tr><td>'+val.COLUMN_NAME+'</td><td>'+val.COLUMN_TYPE+'</td><td>'+val.MAX_LEN+'</td><td><img src="process.png"></td></tr><tr>');
+			//db.load.tables(key, val.TABLE_NAME, val.ENGINE, val.TABLE_COLLATION, val.TABLE_ROWS); // WebSQL
+		  });
 		}
 	},
 	'tables' : function(database){
@@ -245,7 +264,7 @@ $databases = $SQL->consulta("SELECT DISTINCT TABLE_SCHEMA FROM information_schem
       </div>
       <div class="row">
         <div class="col-md-6">
-          <table class="table">
+          <table class="table table-striped">
             <thead>
               <tr>
                 <th>Tabla</th>
@@ -266,24 +285,44 @@ $databases = $SQL->consulta("SELECT DISTINCT TABLE_SCHEMA FROM information_schem
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist" id="tabs-title">
             <li role="presentation" class="active">
-            	<a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a>
-            </li>
-            <li role="presentation">
-            	<a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Profile</a>
-            </li>
-            <li role="presentation">
-            	<a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">Messages</a>
-            </li>
-            <li role="presentation">
-            	<a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a>
+            	<a href="#home" aria-controls="home" role="tab" data-toggle="tab">Inicio</a>
             </li>
           </ul>
           <!-- Tab panes -->
-          <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="home">...Hilo1</div>
-            <div role="tabpanel" class="tab-pane" id="profile">...Hilo2</div>
-            <div role="tabpanel" class="tab-pane" id="messages">...Hilo3</div>
-            <div role="tabpanel" class="tab-pane" id="settings">...Hilo4</div>
+          <div class="tab-content" id="tabs-content">
+            <div role="tabpanel" class="tab-pane active" id="home">
+            <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Username</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Mark</td>
+                <td>Otto</td>
+                <td>@mdo</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Jacob</td>
+                <td>Thornton</td>
+                <td>@fat</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Larry</td>
+                <td>the Bird</td>
+                <td>@twitter</td>
+              </tr>
+            </tbody>
+          </table>
+            
+            </div>
           </div>
         </div>
       </div>
