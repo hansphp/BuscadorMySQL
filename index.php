@@ -97,7 +97,7 @@ var db = {
 				});
 			});
 		},
-		columns : function (id, th){
+		columns : function (id, th, callback){
 			db.instance.transaction(function (tx) {
 				var items = [];
 				tx.executeSql('SELECT * FROM columns WHERE tabla_id = ?', [id], function (tx, results) {
@@ -106,6 +106,7 @@ var db = {
 					   $( '#columns-' + th ).html(items.join( "" ));
 				  }
 				  $( '#thread-img-' + th ).css('display', 'none');
+				  callback();
 				  /*
 				   $( "#tables" ).html(items.join( "" ));
 				   $('#filter').prop('disabled', false);
@@ -133,14 +134,17 @@ var load = {
 				$('#tabs-content').append('<div role="tabpanel" class="tab-pane" id="thread-' + th + '"><table class="table"><thead><tr><th>Campo</th><th>Tipo de dato</th><th>Tamaño máximo</th><th>Estado</th></tr></thead><tbody id="columns-' + th + '"></tbody></table></div>');
 				
 				$('#columns-' + th ).html('<td colspan="5" class="wait"><img src="loading.gif" height="32px"></td>');
-				db.populate.columns(id, th);
-				load.threads.run(id, th);
+				db.populate.columns(id, th, function(){
+					load.threads.run(id, th);
+				});
 			}else{
 				console.warn('No se puede agregar el Thread, debido a que ya está en ejecución.');
 			}
 			
 		},
 		run: function(id, th){
+			// Empieza a correr el hilo.
+			$('tr[data-id=' + id + ']').find('img').attr('src','loading.gif');
 			
 		}
 	},
