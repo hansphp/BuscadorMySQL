@@ -246,7 +246,7 @@ $databases = $SQL->consulta("SELECT DISTINCT TABLE_SCHEMA FROM information_schem
 ?>
 
 <div class="page-header">
-        <h1>Buscador MySQL</h1>
+        <img src="logo.png">
 </div>
       <div class="row">
         <div class="col-md-6">
