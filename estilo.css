@@ -1,0 +1,15 @@
+/* CSS Document */
+
+body {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+td.wait{
+	padding:10px;
+	font-weight:bold;
+	color:#990;
+	text-align:center;
+}
+.tab-content{
+	margin-top:10px;
+}
