@@ -9,27 +9,13 @@
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
-</head>
 
+<link rel="stylesheet" href="estilo.css">
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-<style>
-body {
-  padding-left: 30px;
-  padding-right: 30px;
-}
-td.wait{
-	padding:10px;
-	font-weight:bold;
-	color:#990;
-	text-align:center;
-}
-.tab-content{
-	margin-top:10px;
-}
-</style>
+
 <script>
 var db = {
 	instance: null,
@@ -55,13 +41,13 @@ var db = {
 		tables: function(){
 			db.instance.transaction(function (tx) {
 				tx.executeSql("CREATE TABLE IF NOT EXISTS " +
-                  "tables(id INTEGER PRIMARY KEY ASC, tabla TEXT, motor TEXT, cotejamiento TEXT, filas INTEGER, estado VARCHAR)", []);
+                  "tables(id INTEGER PRIMARY KEY ASC, tabla TEXT, motor TEXT, cotejamiento TEXT, filas INTEGER, estado VARCHAR, cargado VARCHAR)", []);
 			});
 		},
 		columns: function(){
 			db.instance.transaction(function (tx) {
 				tx.executeSql("CREATE TABLE IF NOT EXISTS " +
-                  "columns(tabla TEXT, columna TEXT, tipo TEXT, type TEXT, size INTEGER, estado VARCHAR)", []);
+                  "columns(id INTEGER PRIMARY KEY ASC, tabla TEXT, tabla_id INTEGER, columna TEXT, tipo TEXT, type TEXT, size INTEGER, estado VARCHAR)", []);
 			});
 		}
 	},
@@ -82,12 +68,12 @@ var db = {
 	load: {
 		tables: function(idx, table, engine, cotejamiento, filas){
 			db.instance.transaction(function (tx) {
-			  tx.executeSql('INSERT INTO tables VALUES (?, ?, ?, ?, ?, ?)', [idx, table, engine, cotejamiento, filas, 'process']);
+			  tx.executeSql('INSERT INTO tables VALUES (?, ?, ?, ?, ?, ?, ?)', [idx, table, engine, cotejamiento, filas, 'process', 'NO']);
 			});
 		},
-		columns: function(tabla, columna, tipo, type, size){
+		columns: function(tabla, tabla_id, columna, tipo, type, size){
 			db.instance.transaction(function (tx) {
-			  tx.executeSql('INSERT INTO columns VALUES (?, ?, ?, ?, ?, ?)', [tabla, columna, tipo, type, size, 'process']);
+			  tx.executeSql('INSERT INTO columns (tabla, tabla_id, columna, tipo, type, size, estado) VALUES (?, ?, ?, ?, ?, ?, ?)', [tabla, tabla_id, columna, tipo, type, size, 'process']);
 			});
 		}
 	},
@@ -101,9 +87,9 @@ var db = {
 				}
 				tx.executeSql('SELECT * FROM tables WHERE (tabla LIKE ?) AND filas > ' + filas, ['%'+aux+'%'], function (tx, results) {
 				  for (var i = 0; i < results.rows.length; i++) {
-					// console.log(results.rows.item(i).tabla);
 					items.push('<tr data-id="'+results.rows.item(i).id+'"><td>' + results.rows.item(i).tabla + "</td> <td>" + results.rows.item(i).motor + "</td><td>" + results.rows.item(i).cotejamiento + "</td> <td>" + results.rows.item(i).filas + "</td><td><img src='"+results.rows.item(i).estado+".png'></td> </tr>");
 				  }
+				  
 				   $( "#tables" ).html(items.join( "" ));
 				   $('#filter').prop('disabled', false);
 				   $('#noempty').prop('disabled', false);
@@ -111,26 +97,22 @@ var db = {
 				});
 			});
 		},
-		columns : function (id){
+		columns : function (id, th){
 			db.instance.transaction(function (tx) {
-				tx.executeSql('SELECT * FROM tables WHERE id = ?', [id], function (tx, results) {
-					var database = $('#database').val();
-					var jqxhr = $.post( "load.php?type=column&database="+database+"&table="+results.rows.item(0).tabla, function(data) {
-					  console.info( "success");
-					  load.threads.add(data);
-					})
-					  .done(function() {
-						console.info( "second success" );
-					  })
-					  .fail(function() {
-						console.info( "error" );
-					  })
-					  .always(function() {
-						console.info( "finished" );
-					});
-					
+				var items = [];
+				tx.executeSql('SELECT * FROM columns WHERE tabla_id = ?', [id], function (tx, results) {
+				  for (var i = 0; i < results.rows.length; i++) {
+					  items.push('<tr><td>'+results.rows.item(i).columna+'</td><td>'+results.rows.item(i).tipo+'</td><td>'+results.rows.item(i).size+'</td><td><img src="'+results.rows.item(i).estado+'.png"></td></tr><tr>');
+					   $( '#columns-' + th ).html(items.join( "" ));
+				  }
+				  $( '#thread-img-' + th ).css('display', 'none');
+				  /*
+				   $( "#tables" ).html(items.join( "" ));
+				   $('#filter').prop('disabled', false);
+				   $('#noempty').prop('disabled', false);
+				   $('#reset').prop('disabled', false);*/
 				});
-			});	
+			});
 		}
 	}
 }
@@ -139,21 +121,30 @@ var load = {
 	threads:{
 		max:4,
 		counter:0,
-		add: function(data){
-			console.info("Agregando thread.");
-			var th = load.threads.counter++;
-			$('#tabs-title').append('<li role="presentation"><a href="#thread-' + th + '" aria-controls="thread-' + th + '" role="tab" data-toggle="tab">Thread{' + th + '}</a></li>');
-			$('#tabs-content').append('<div role="tabpanel" class="tab-pane" id="thread-' + th + '"><table class="table"><thead><tr><th>Campo</th><th>Tipo de dato</th><th>Tamaño máximo</th><th>Username</th></tr></thead><tbody id="columns-' + th + '"></tbody></table></div>');
-			console.log(data);
+		process:Array(),
+		count: function(){ return load.threads.process.length },
+		add: function(id){
+			if(load.threads.process.indexOf(id) < 0){
+				load.threads.process.push(id);
+				var th = load.threads.counter++;
+				console.info("Agregando thread: " + th + " para tabla " + id);
+				$('#tabs-title').append('<li role="presentation"><a href="#thread-' + th + '" aria-controls="thread-' + th + '" role="tab" data-toggle="tab">Thread [' + th + ']<img src="loading.gif" id="thread-img-' + th + '"></a></li>');
+				
+				$('#tabs-content').append('<div role="tabpanel" class="tab-pane" id="thread-' + th + '"><table class="table"><thead><tr><th>Campo</th><th>Tipo de dato</th><th>Tamaño máximo</th><th>Estado</th></tr></thead><tbody id="columns-' + th + '"></tbody></table></div>');
+				
+				$('#columns-' + th ).html('<td colspan="5" class="wait"><img src="loading.gif" height="32px"></td>');
+				db.populate.columns(id, th);
+				load.threads.run(id, th);
+			}else{
+				console.warn('No se puede agregar el Thread, debido a que ya está en ejecución.');
+			}
 			
-			$.each( data, function( key, val ) {
-				console.log(val);
-				db.load.columns(val.TABLE_NAME, val.COLUMN_NAME, val.COLUMN_TYPE, val.DATA_TYPE, val.MAX_LEN); // WebSQL
-			///	$('#columns-' + th).append('<tr><td>'+val.COLUMN_NAME+'</td><td>'+val.COLUMN_TYPE+'</td><td>'+val.MAX_LEN+'</td><td><img src="process.png"></td></tr><tr>');
-		  });
+		},
+		run: function(id, th){
+			
 		}
 	},
-	'tables' : function(database){
+	tables: function(database){
 		db.reset.tables(); // WebSQL
 		$( "#tables" ).html('<td colspan="5" class="wait"><img src="loading.gif" height="32px"></td>');
 		$.getJSON( 'load.php?type=table&database=' + database, function( data ) {
@@ -163,6 +154,28 @@ var load = {
 		}).done(function() {
 			db.populate.tables('');
 		});	
+	},
+	columns: function(id){
+			db.instance.transaction(function (tx) {
+				tx.executeSql('SELECT * FROM tables WHERE id = ?', [id], function (tx, results) {
+					var database = $('#database').val();
+					if(load.threads.process.indexOf(id) < 0){
+						$.getJSON( 'load.php?type=column&database='+database+'&table='+results.rows.item(0).tabla, function(data) {
+							$.each( data, function( key, val ) {
+								db.load.columns(val.TABLE_NAME, id, val.COLUMN_NAME, val.COLUMN_TYPE, val.DATA_TYPE, val.MAX_LEN); // WebSQL
+							});
+						}).done(function() {
+							load.threads.add(id);
+						  }).fail(function() {
+							console.info( "error" );
+						  }).always(function() {
+							console.info( "finished" );
+						});
+					}else{
+						console.warn('No se puede agregar el Thread, debido a que ya está en ejecución.');
+					}
+				});
+			});	
 	},
 	'example' : function(){
 		var jqxhr = $.post( "ajax.php", function(data) {
@@ -217,11 +230,12 @@ $(function() {
 			// Termina para solo servir al primer elemento.
 			id = $(e).attr('data-id');
         });
-		db.populate.columns(id);
+		
+		load.columns(id);
 	});
 });
 </script>
-
+</head>
 <body role="document">
 <?php
 $databases = $SQL->consulta("SELECT DISTINCT TABLE_SCHEMA FROM information_schema.TABLES WHERE TABLE_SCHEMA <> 'information_schema'");
@@ -280,7 +294,7 @@ $databases = $SQL->consulta("SELECT DISTINCT TABLE_SCHEMA FROM information_schem
                 <th>Motor</th>
                 <th>Cotejamiento</th>
                 <th>Filas</th>
-                <th>Status</th>
+                <th>Estado</th>
               </tr>
             </thead>
             <tbody id="tables">
