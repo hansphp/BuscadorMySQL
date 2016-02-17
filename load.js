@@ -55,6 +55,7 @@ var load = {
 						 row.attr('data-status', 'ok');
 						 row.find('img').attr('src','ok.png');
 						 memory.status = 'ok';
+						 db.load.founds(memory.table, row.find('td').first().text(), row.find('td[data=tipo]').text(), parseInt(row.find('td[data=size]').text()), coincidencias);
 					 }else{
 						 row.attr('data-status', 'info');
 						 row.find('img').attr('src','info.png');

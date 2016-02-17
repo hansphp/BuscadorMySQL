@@ -18,6 +18,7 @@ var db = {
 			});
 		});
 		db.reset.columns();
+		db.reset.founds(); // Reset especial
 		console.log('Base de datos inicializada');
 	},
 	create:{
@@ -31,6 +32,12 @@ var db = {
 			db.instance.transaction(function (tx) {
 				tx.executeSql("CREATE TABLE IF NOT EXISTS " +
                   "columns(id INTEGER PRIMARY KEY ASC, tabla TEXT, tabla_id INTEGER, columna TEXT, tipo TEXT, type TEXT, size INTEGER, estado VARCHAR)", []);
+			});
+		},
+		founds: function(){
+			db.instance.transaction(function (tx) {
+				tx.executeSql("CREATE TABLE IF NOT EXISTS " +
+                  "founds(id INTEGER PRIMARY KEY ASC, tabla TEXT, columna INTEGER, tipo TEXT, size INTEGER, coincidencias INTEGER)", []);
 			});
 		}
 	},
@@ -46,6 +53,12 @@ var db = {
 				tx.executeSql("DROP TABLE columns");
 			});
 			db.create.columns();
+		},
+		founds: function(){
+			db.instance.transaction(function (tx) {
+				tx.executeSql("DROP TABLE founds");
+			});
+			db.create.founds();
 		}
 	},
 	load: {
@@ -57,6 +70,11 @@ var db = {
 		columns: function(tabla, tabla_id, columna, tipo, type, size){
 			db.instance.transaction(function (tx) {
 			  tx.executeSql('INSERT INTO columns (tabla, tabla_id, columna, tipo, type, size, estado) VALUES (?, ?, ?, ?, ?, ?, ?)', [tabla, tabla_id, columna, tipo, type, size, 'process']);
+			});
+		},
+		founds: function(tabla, columna, tipo, size, coincidencias){
+			db.instance.transaction(function (tx) {
+			  tx.executeSql('INSERT INTO founds (tabla, columna, tipo, size, coincidencias) VALUES (?, ?, ?, ?, ?)', [tabla, columna, tipo, size, coincidencias]);
 			});
 		}
 	},
@@ -85,7 +103,25 @@ var db = {
 				var items = [];
 				tx.executeSql('SELECT * FROM columns WHERE tabla_id = ?', [id], function (tx, results) {
 				  for (var i = 0; i < results.rows.length; i++) {
-					  items.push('<tr data-status="process" data-id="' + results.rows.item(i).id + '" data-tabla-id="' + results.rows.item(i).tabla_id + '"><td>'+results.rows.item(i).columna+'</td><td>'+results.rows.item(i).tipo+'</td><td>'+results.rows.item(i).size+'</td><td class="text-success">*</td><td><img src="'+results.rows.item(i).estado+'.png"></td></tr><tr>');
+					  items.push('<tr data-status="process" data-id="' + results.rows.item(i).id + '" data-tabla-id="' + results.rows.item(i).tabla_id + '"><td>'+results.rows.item(i).columna+'</td><td data="tipo">'+results.rows.item(i).tipo+'</td><td data="size">'+results.rows.item(i).size+'</td><td class="text-success">*</td><td><img src="'+results.rows.item(i).estado+'.png"></td></tr><tr>');
+					   $( '#columns-' + th ).html(items.join( "" ));
+				  }
+				  $( '#thread-img-' + th ).css('display', 'none');
+				  callback();
+				  /*
+				   $( "#tables" ).html(items.join( "" ));
+				   $('#filter').prop('disabled', false);
+				   $('#noempty').prop('disabled', false);
+				   $('#reset').prop('disabled', false);*/
+				});
+			});
+		},
+		founds : function (){
+			db.instance.transaction(function (tx) {
+				var items = [];
+				tx.executeSql('SELECT * FROM founds', [], function (tx, results) {
+				  for (var i = 0; i < results.rows.length; i++) {
+					  items.push('<tr><td>'+results.rows.item(i).tabla+'</td><td>'+results.rows.item(i).columna+'</td><td>'+results.rows.item(i).columna+'</td><td class="text-success">*</td><td>dd</td></tr><tr>');
 					   $( '#columns-' + th ).html(items.join( "" ));
 				  }
 				  $( '#thread-img-' + th ).css('display', 'none');
