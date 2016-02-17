@@ -85,7 +85,7 @@ var db = {
 				var items = [];
 				tx.executeSql('SELECT * FROM columns WHERE tabla_id = ?', [id], function (tx, results) {
 				  for (var i = 0; i < results.rows.length; i++) {
-					  items.push('<tr><td>'+results.rows.item(i).columna+'</td><td>'+results.rows.item(i).tipo+'</td><td>'+results.rows.item(i).size+'</td><td><img src="'+results.rows.item(i).estado+'.png"></td></tr><tr>');
+					  items.push('<tr data-status="process" data-id="' + results.rows.item(i).id + '" data-tabla-id="' + results.rows.item(i).tabla_id + '"><td>'+results.rows.item(i).columna+'</td><td>'+results.rows.item(i).tipo+'</td><td>'+results.rows.item(i).size+'</td><td coincidencias="' + th + '">*</td><td><img src="'+results.rows.item(i).estado+'.png"></td></tr><tr>');
 					   $( '#columns-' + th ).html(items.join( "" ));
 				  }
 				  $( '#thread-img-' + th ).css('display', 'none');

@@ -12,7 +12,7 @@ var load = {
 				console.info("Agregando thread: " + th + " para tabla " + id);
 				$('#tabs-title').append('<li role="presentation"><a href="#thread-' + th + '" aria-controls="thread-' + th + '" role="tab" data-toggle="tab">Thread [' + th + ']<img src="loading.gif" id="thread-img-' + th + '"></a></li>');
 				
-				$('#tabs-content').append('<div role="tabpanel" class="tab-pane" id="thread-' + th + '"><table class="table"><thead><tr><th>Campo</th><th>Tipo de dato</th><th>Tamaño máximo</th><th>Estado</th></tr></thead><tbody id="columns-' + th + '"></tbody></table></div>');
+				$('#tabs-content').append('<div role="tabpanel" class="tab-pane" id="thread-' + th + '"><table class="table"><thead><tr><th>Campo</th><th>Tipo de dato</th><th>Tamaño máximo</th><th>Coincidencias</th><th>Estado</th></tr></thead><tbody id="columns-' + th + '"></tbody></table></div>');
 				
 				$('#columns-' + th ).html('<td colspan="5" class="wait"><img src="loading.gif" height="32px"></td>');
 				db.populate.columns(id, th, function(){
@@ -25,11 +25,32 @@ var load = {
 		},
 		run: function(id, th){
 			// Empieza a correr el hilo.
-			$('tr[data-id=' + id + ']').find('img').attr('src','loading.gif');
+			$('#tables tr[data-id=' + id + ']').find('img').attr('src','loading.gif');
+			
 			// Lista de columnas
-			$('#columns-' + th + ' tr').each(function(idx, e) {
-                console.log(e);
-            });
+			var procesos = $('#columns-' + th + ' tr[data-status=process]');
+			var row = procesos.first();
+			
+			if(procesos.length > 0){
+				row.find('img').attr('src','loading.gif');
+				$.post( "ajax.php", function(data) {
+				  row.attr('data-status', 'ok');
+				  row.find('img').attr('src','ok.png');
+				 // console.log(data);
+				})
+				  .done(function() {
+					load.threads.run(id, th);
+				  })
+				  .fail(function() {
+					console.info( "error" );
+					row.find('img').attr('src','error.png');
+				  })
+				  .always(function() {
+					console.info( "finished" );
+				});
+			}else{
+				$('#tables tr[data-id=' + id + ']').find('img').attr('src','ok.png');
+			}
 		}
 	},
 	tables: function(database){
