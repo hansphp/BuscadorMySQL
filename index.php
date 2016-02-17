@@ -119,12 +119,13 @@ $databases = $SQL->consulta("SELECT DISTINCT TABLE_SCHEMA FROM information_schem
                 <th>Motor</th>
                 <th>Cotejamiento</th>
                 <th>Filas</th>
-                <th>Estado</th>
+                <th class="text-right">Progreso</th>
+                <th class="text-right">Estado</th>
               </tr>
             </thead>
             <tbody id="tables">
               <tr>
-              	<td colspan="5" class="wait">Lista de tablas en la base de datos</td>
+              	<td colspan="6" class="wait">Lista de tablas en la base de datos</td>
               </tr>
             </tbody>
           </table>

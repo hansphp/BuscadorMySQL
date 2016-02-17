@@ -70,7 +70,7 @@ var db = {
 				}
 				tx.executeSql('SELECT * FROM tables WHERE (tabla LIKE ?) AND filas > ' + filas, ['%'+aux+'%'], function (tx, results) {
 				  for (var i = 0; i < results.rows.length; i++) {
-					items.push('<tr data-id="'+results.rows.item(i).id+'"><td>' + results.rows.item(i).tabla + "</td> <td>" + results.rows.item(i).motor + "</td><td>" + results.rows.item(i).cotejamiento + "</td> <td>" + results.rows.item(i).filas + "</td><td><img src='"+results.rows.item(i).estado+".png'></td> </tr>");
+					items.push('<tr data-id="'+results.rows.item(i).id+'"><td>' + results.rows.item(i).tabla + "</td> <td>" + results.rows.item(i).motor + "</td><td>" + results.rows.item(i).cotejamiento + "</td> <td>" + results.rows.item(i).filas + "</td><td class='text-muted text-right'>0%</td><td class='text-right'><img src='"+results.rows.item(i).estado+".png'></td> </tr>");
 				  }
 				  
 				   $( "#tables" ).html(items.join( "" ));

@@ -11,7 +11,9 @@ var load = {
 				load.threads.memory[parseInt(id)] = {
 					'database': database,
 					'table': table,
-					'status': 'info' 
+					'status': 'info',
+					'total': 0,
+					'current': 0
 				};
 				load.threads.process.push(id);
 				var th = load.threads.counter++;
@@ -24,6 +26,7 @@ var load = {
 				db.populate.columns(id, th, function(){
 					console.log('Running');
 					load.threads.run(id, th);
+					load.threads.memory[parseInt(id)].total = $('#columns-' + th + ' tr[data-status=process]').length;
 				});
 			}else{
 				console.warn('No se puede agregar el Thread, debido a que ya está en ejecución.');
@@ -45,6 +48,9 @@ var load = {
 				})
 				  .done(function(data) {
 					 var coincidencias = parseInt(data.coincidencias);
+					 memory.current++;
+					 var progress = Math.trunc((memory.current*100)/memory.total);
+					 $('#tables tr[data-id=' + id + ']').find('td.text-muted').text(progress + '\t%');
 					 if(coincidencias > 0){
 						 row.attr('data-status', 'ok');
 						 row.find('img').attr('src','ok.png');
