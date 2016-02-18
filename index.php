@@ -55,8 +55,9 @@ $(function() {
 		$('#tables tr').each(function(i, e) {
 			// Termina para solo servir al primer elemento.
 			id = $(e).attr('data-id');
+			load.columns(id);
         });
-		load.columns(id);
+		
 	});
 });
 </script>
