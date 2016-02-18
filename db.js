@@ -121,11 +121,9 @@ var db = {
 				var items = [];
 				tx.executeSql('SELECT * FROM founds', [], function (tx, results) {
 				  for (var i = 0; i < results.rows.length; i++) {
-					  items.push('<tr><td>'+results.rows.item(i).tabla+'</td><td>'+results.rows.item(i).columna+'</td><td>'+results.rows.item(i).columna+'</td><td class="text-success">*</td><td>dd</td></tr><tr>');
-					   $( '#columns-' + th ).html(items.join( "" ));
+					  items.push('<tr><td>'+results.rows.item(i).tabla+'</td><td>'+results.rows.item(i).columna+'</td><td>'+results.rows.item(i).tipo+'</td><td>'+results.rows.item(i).size+'</td><td>'+results.rows.item(i).coincidencias+'</td></tr><tr>');
+					   $( '#founds' ).html(items.join( "" ));
 				  }
-				  $( '#thread-img-' + th ).css('display', 'none');
-				  callback();
 				  /*
 				   $( "#tables" ).html(items.join( "" ));
 				   $('#filter').prop('disabled', false);

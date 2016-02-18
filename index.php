@@ -134,7 +134,7 @@ $databases = $SQL->consulta("SELECT DISTINCT TABLE_SCHEMA FROM information_schem
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist" id="tabs-title">
             <li role="presentation" class="active">
-            	<a href="#home" aria-controls="home" role="tab" data-toggle="tab">Inicio</a>
+            	<a href="#home" aria-controls="home" role="tab" data-toggle="tab">Resultados</a>
             </li>
           </ul>
           <!-- Tab panes -->
@@ -152,11 +152,7 @@ $databases = $SQL->consulta("SELECT DISTINCT TABLE_SCHEMA FROM information_schem
             </thead>
             <tbody id="founds">
               <tr>
-                <td>1</td>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>@mdo</td>
-                <td>@mdo</td>
+              	<td colspan="5" class="wait">Lista de coinicidencias en la base de datos</td>
               </tr>
             </tbody>
           </table>
