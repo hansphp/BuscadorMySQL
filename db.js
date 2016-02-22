@@ -7,10 +7,7 @@ var db = {
 		db.instance.transaction(function (tx) {
 			tx.executeSql('SELECT * FROM tables WHERE id >= 0', [], function (tx, results) {
 				if(results.rows.length > 0){
-					// db.reset.tables();
-					$("#database").val(localStorage.getItem('database'));
-					$("#filter").val(localStorage.getItem('filter'));
-					$("#buscar").val(localStorage.getItem('buscar'));
+					utils.storage.load('database').load('filter').load('buscar');
 					$("#noempty").prop('checked', localStorage.getItem('noempty')=='true');
 					$('#database').prop('disabled', true);
 					db.populate.tables($('#filter').val(), localStorage.getItem('noempty')=='true');
