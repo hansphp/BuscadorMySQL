@@ -1,6 +1,6 @@
 <?php
 define('__HVE', "<tt>Error crítico de seguridad</tt>");
-include_once('class/MySQL/mysqli.dev.class.php');
+include_once('class/MySQL/mysqli.class.php');
 
 define('H_MYSQL_HOST', 'localhost');
 define('H_MYSQL_USUARIO', 'root');
