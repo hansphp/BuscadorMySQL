@@ -85,7 +85,7 @@ var db = {
 				}
 				tx.executeSql('SELECT * FROM tables WHERE (tabla LIKE ?) AND filas > ' + filas, ['%'+aux+'%'], function (tx, results) {
 				  for (var i = 0; i < results.rows.length; i++) {
-					items.push('<tr data-id="'+results.rows.item(i).id+'"><td>' + results.rows.item(i).tabla + "</td> <td>" + results.rows.item(i).motor + "</td><td>" + results.rows.item(i).cotejamiento + "</td> <td>" + results.rows.item(i).filas + "</td><td class='text-muted text-right'>0%</td><td class='text-right'><img src='"+results.rows.item(i).estado+".png'></td> </tr>");
+					items.push('<tr data-id="'+results.rows.item(i).id+'" data-status="'+results.rows.item(i).estado+'"><td>' + results.rows.item(i).tabla + "</td> <td>" + results.rows.item(i).motor + "</td><td>" + results.rows.item(i).cotejamiento + "</td> <td>" + results.rows.item(i).filas + "</td><td class='text-muted text-right'>0%</td><td class='text-right'><img src='"+results.rows.item(i).estado+".png'></td> </tr>");
 				  }
 				  
 				   $( "#tables" ).html(items.join( "" ));
@@ -103,7 +103,7 @@ var db = {
 					  items.push('<tr data-status="process" data-id="' + results.rows.item(i).id + '" data-tabla-id="' + results.rows.item(i).tabla_id + '"><td>'+results.rows.item(i).columna+'</td><td data="tipo">'+results.rows.item(i).tipo+'</td><td data="size">'+results.rows.item(i).size+'</td><td class="text-success">*</td><td><img src="'+results.rows.item(i).estado+'.png"></td></tr><tr>');
 					   $( '#columns-' + th ).html(items.join( "" ));
 				  }
-				  $( '#thread-img-' + th ).css('display', 'none');
+				 // $( '#thread-img-' + th ).css('display', 'none');
 				  callback();
 				  /*
 				   $( "#tables" ).html(items.join( "" ));

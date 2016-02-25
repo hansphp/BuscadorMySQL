@@ -3,30 +3,20 @@ var load = {
 	threads:{
 		max:4,
 		counter:0,
+		hash:0,
 		process:Array(),
 		memory:[],
 		count: function(){ return load.threads.process.length },
 		init: function(){
 			console.info('Cargador de hilos.');
-			
-			var id = -1;
-			
-			//$('#tables tr');
-			/*.each(function(i, e) {
-				
-				// Termina para solo servir al primer elemento.
-				if($(e).find('img').attr('src') == 'process.png'){
-					
-					load.columns($(e).attr('data-id'));
-					
-				}
-				
-			});*/
-			
-			setTimeout(function(){ load.threads.init(); }, 3000);
+			var id = $('#tables tr[data-status=process]').first().attr('data-id');
+			if(id != undefined){
+				load.columns(id);
+				setTimeout(function(){ load.threads.init(); }, 1000);
+			}
 		},
 		add: function(id, database, table){
-			if(load.threads.process.indexOf(id) < 0 && load.threads.counter < 4){
+			if(load.threads.process.indexOf(id) < 0 && load.threads.counter < load.threads.max){
 				load.threads.memory[parseInt(id)] = {
 					'database': database,
 					'table': table,
@@ -35,9 +25,10 @@ var load = {
 					'current': 0
 				};
 				load.threads.process.push(id);
-				var th = load.threads.counter = parseInt(load.threads.counter) + 1;
+				var th = load.threads.hash = parseInt(load.threads.hash) + 1;
+				load.threads.counter = parseInt(load.threads.counter) + 1;
 				console.info("Agregando thread: " + th + " para tabla " + id);
-				$('#tabs-title').append('<li role="presentation"><a href="#thread-' + th + '" aria-controls="thread-' + th + '" role="tab" data-toggle="tab">'+table+' [' + th + ']<img src="loading.gif" id="thread-img-' + th + '"></a></li>');
+				$('#tabs-title').append('<li role="presentation" id="li-thread-'+th+'"><a href="#thread-' + th + '" aria-controls="thread-' + th + '" role="tab" data-toggle="tab">'+table+' [' + th + ']</a></li>');
 				
 				$('#tabs-content').append('<div role="tabpanel" class="tab-pane" id="thread-' + th + '"><h2>'+table+'</h2><table class="table"><thead><tr><th>Campo</th><th>Tipo de dato</th><th>Tamaño máximo</th><th>Coincidencias</th><th>Estado</th></tr></thead><tbody id="columns-' + th + '"></tbody></table></div>');
 				
@@ -55,6 +46,7 @@ var load = {
 		run: function(id, th){
 			// Empieza a correr el hilo.
 			$('#tables tr[data-id=' + id + ']').find('img').attr('src','loading.gif');
+			$('#tables tr[data-id=' + id + ']').attr('data-status','loading');
 			// Lista de columnas
 			var procesos = $('#columns-' + th + ' tr[data-status=process]');
 			var row = procesos.first();
@@ -79,8 +71,6 @@ var load = {
 					 }else{
 						 row.attr('data-status', 'info');
 						 row.find('img').attr('src','info.png');
-						 
-						 load.threads.counter = parseInt(load.threads.counter) - 1;
 						 //console.warn(load.threads.counter);
 					 }
 					 row.find('td.text-success').text(coincidencias);
@@ -93,9 +83,12 @@ var load = {
 				  })
 				  .always(function() {
 					console.info( "finished" );
-				});
+				});	
 			}else{
 				$('#tables tr[data-id=' + id + ']').find('img').attr('src',memory.status+'.png');
+				$('#li-thread-' + th).remove();
+				$('#thread-' + th).remove();
+				load.threads.counter = parseInt(load.threads.counter) - 1;
 			}
 		}
 	},
@@ -111,7 +104,7 @@ var load = {
 		});	
 	},
 	columns: function(id){
-		if(load.threads.counter < 4){
+		if(load.threads.counter < load.threads.max){
 			db.instance.transaction(function (tx) {
 				tx.executeSql('SELECT * FROM tables WHERE id = ?', [id], function (tx, results) {
 					var database = $('#database').val();
