@@ -6,8 +6,27 @@ var load = {
 		process:Array(),
 		memory:[],
 		count: function(){ return load.threads.process.length },
+		init: function(){
+			console.info('Cargador de hilos.');
+			
+			var id = -1;
+			
+			//$('#tables tr');
+			/*.each(function(i, e) {
+				
+				// Termina para solo servir al primer elemento.
+				if($(e).find('img').attr('src') == 'process.png'){
+					
+					load.columns($(e).attr('data-id'));
+					
+				}
+				
+			});*/
+			
+			setTimeout(function(){ load.threads.init(); }, 3000);
+		},
 		add: function(id, database, table){
-			if(load.threads.process.indexOf(id) < 0){
+			if(load.threads.process.indexOf(id) < 0 && load.threads.counter < 4){
 				load.threads.memory[parseInt(id)] = {
 					'database': database,
 					'table': table,
@@ -16,7 +35,7 @@ var load = {
 					'current': 0
 				};
 				load.threads.process.push(id);
-				var th = load.threads.counter++;
+				var th = load.threads.counter = parseInt(load.threads.counter) + 1;
 				console.info("Agregando thread: " + th + " para tabla " + id);
 				$('#tabs-title').append('<li role="presentation"><a href="#thread-' + th + '" aria-controls="thread-' + th + '" role="tab" data-toggle="tab">'+table+' [' + th + ']<img src="loading.gif" id="thread-img-' + th + '"></a></li>');
 				
@@ -29,7 +48,7 @@ var load = {
 					load.threads.memory[parseInt(id)].total = $('#columns-' + th + ' tr[data-status=process]').length;
 				});
 			}else{
-				console.warn('No se puede agregar el Thread, debido a que ya está en ejecución.');
+				console.warn('No se puede agregar el Thread, debido a que ya está en ejecución o está al límite de número de threads corriendo.');
 			}
 			
 		},
@@ -60,6 +79,9 @@ var load = {
 					 }else{
 						 row.attr('data-status', 'info');
 						 row.find('img').attr('src','info.png');
+						 
+						 load.threads.counter = parseInt(load.threads.counter) - 1;
+						 //console.warn(load.threads.counter);
 					 }
 					 row.find('td.text-success').text(coincidencias);
 					 
@@ -89,11 +111,12 @@ var load = {
 		});	
 	},
 	columns: function(id){
+		if(load.threads.counter < 4){
 			db.instance.transaction(function (tx) {
 				tx.executeSql('SELECT * FROM tables WHERE id = ?', [id], function (tx, results) {
 					var database = $('#database').val();
 					if(load.threads.process.indexOf(id) < 0){
-						$.getJSON( 'load.php?type=column&database='+database+'&table='+results.rows.item(0).tabla, function(data) {
+						$.getJSON( 'load.php?type=column&database=' + database + '&table=' + results.rows.item(0).tabla, function(data) {
 							$.each( data, function( key, val ) {
 								db.load.columns(val.TABLE_NAME, id, val.COLUMN_NAME, val.COLUMN_TYPE, val.DATA_TYPE, val.MAX_LEN); // WebSQL
 							});
@@ -109,20 +132,6 @@ var load = {
 					}
 				});
 			});	
-	},
-	'example' : function(){
-		var jqxhr = $.post( "ajax.php", function(data) {
-		  console.info( "success");
-		  console.log(data);
-		})
-		  .done(function() {
-			console.info( "second success" );
-		  })
-		  .fail(function() {
-			console.info( "error" );
-		  })
-		  .always(function() {
-			console.info( "finished" );
-		});
+		}
 	}
 };

@@ -25,7 +25,6 @@ $(function() {
 		localStorage.setItem("database", this.value);
 		$('#database').prop('disabled', true);
 		load.tables( this.value );
-		load.example();
 		console.warn('Fin de llamadas');
 	});
 	$('#filter').keyup(function(){
@@ -51,14 +50,8 @@ $(function() {
 		
 	});
 	$('#boton').click(function(){
-		console.warn("Buscando:"+$('#buscar').val());
-		var id = -1;
-		$('#tables tr').each(function(i, e) {
-			// Termina para solo servir al primer elemento.
-			id = $(e).attr('data-id');
-			load.columns(id);
-        });
-		
+		console.warn('Buscando: ' + $('#buscar').val());
+		load.threads.init();		
 	});
 });
 </script>
